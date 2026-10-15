@@ -1,0 +1,31 @@
+# Standalone alternative: use -f docker-compose.scale.yml, without merging files.
+# The same directory/project name retains the same network and Redis volume.
+services:
+  web:
+    build: .
+    ports:
+      - "5000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
